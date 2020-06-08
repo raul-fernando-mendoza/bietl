@@ -29,7 +29,7 @@ public class HomeResource {
     	   Object[] arrauth = auth.toArray();
     	   for( int i =0 ; i< arrauth.length; i++) {
     		   SimpleGrantedAuthority role = (SimpleGrantedAuthority)arrauth[i];
-    		   roles += role.getAuthority();
+    		   roles += role.getAuthority(); 
     		   roles+=",";
     	   }
     	} else {
