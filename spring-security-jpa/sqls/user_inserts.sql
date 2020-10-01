@@ -6,8 +6,11 @@ GRANT ALL PRIVILEGES ON entities.* TO eApp@'192.168.15.%' IDENTIFIED BY 'odroid'
 
 userFLUSH PRIVILEGES;
 
-INSERT INTO `user` (`id`, `active`, `password`, `roles`, `user_name`) VALUES (0, b'1', 'odroid', 'ROLE_USER,ROLE_ADMIN', 'admin');
+INSERT INTO `user` (`id`, `active`, `password`, `roles`, `user_name`) VALUES (0, b'1', 'odroid', 'ROLE_USER,ROLE_ADMIN', 'admin');user
 INSERT INTO `user` (`id`, `active`, `password`, `roles`, `user_name`) VALUES (1, b'1', 'odroid', 'ROLE_USER', 'user');
+COMMIT;
 
 
-thing
+thingthinghibernate_sequenceuser
+
+SELECT * FROM entities.user

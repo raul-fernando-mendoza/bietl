@@ -1,0 +1,328 @@
+apt update 
+**** if fail next line can fix it
+echo "nameserver 8.8.8.8" | sudo tee /etc/resolv.conf > /dev/null
+
+https://www.linuxeveryday.com/2017/09/install-configure-vnc-server-ubuntu-mate
+#vnc server
+sudo apt-get install vnc4server
+#password should have at leas 6 chars
+vncpasswd
+vncserver :1
+vncserver -kill :1
+nano $HOME/.vnc/xstartup
+#add line
+exec /usr/bin/mate-session &
+#should look like this
+#!/bin/sh
+
+# Uncomment the following two lines for normal desktop:
+# unset SESSION_MANAGER
+# exec /etc/X11/xinit/xinitrc
+
+[ -x /etc/vnc/xstartup ] && exec /etc/vnc/xstartup
+[ -r $HOME/.Xresources ] && xrdb $HOME/.Xresources
+xsetroot -solid grey
+vncconfig -iconic &
+x-terminal-emulator -geometry 80x24+10+10 -ls -title "$VNCDESKTOP Desktop" &
+x-window-manager &
+exec /usr/bin/mate-session &
+####################
+#restart the vnc
+vncserver :1
+#add it to the crontab
+crontab -e
+@reboot vncserver :1
+
+
+
+
+https://linuxize.com/post/how-to-install-tomcat-9-on-ubuntu-18-04/
+sudo useradd -r -m -U -d /opt/tomcat -s /bin/false tomcat
+sudo apt update
+sudo apt install default-jdk
+wget http://www-eu.apache.org/dist/tomcat/tomcat-9/v9.0.34/bin/apache-tomcat-9.0.34.tar.gz -P /tmp
+
+wget https://downloads.apache.org/tomcat/tomcat-9/v9.0.37/bin/apache-tomcat-9.0.37.tar.gz  -P /tmp
+--extract
+sudo tar xf /tmp/apache-tomcat-9.0.37.tar.gz  -C /opt/tomcat
+sudo ln -s /opt/tomcat/apache-tomcat-9.0.37 /opt/tomcat/latest
+sudo chown -RH tomcat: /opt/tomcat/latest
+sudo sh -c 'chmod +x /opt/tomcat/latest/bin/*.sh'
+
+list all users
+
+less /etc/passwd
+
+*********/etc/systemd/system/tomcat.service******************
+[Unit]
+Description=Tomcat 9 servlet container
+After=network.target
+
+[Service]
+Type=forking
+
+User=tomcat
+Group=tomcat
+
+Environment="JAVA_HOME=/usr/lib/jvm/default-java"
+Environment="JAVA_OPTS=-Djava.security.egd=file:///dev/urandom -Djava.awt.headless=true"
+
+Environment="CATALINA_BASE=/opt/tomcat/latest"
+Environment="CATALINA_HOME=/opt/tomcat/latest"
+Environment="CATALINA_PID=/opt/tomcat/latest/temp/tomcat.pid"
+Environment="CATALINA_OPTS=-Xms512M -Xmx1024M -server -XX:+UseParallelGC"
+
+ExecStart=/opt/tomcat/latest/bin/startup.sh
+ExecStop=/opt/tomcat/latest/bin/shutdown.sh
+
+[Install]
+WantedBy=multi-user.target
+****************************************************
+Execute the following commands
+
+sudo systemctl daemon-reload
+
+sudo systemctl start tomcat
+
+sudo systemctl enable tomcat
+
+to allow tomcat to  deploy apps from a different computer
+-------add /opt/tomcat/latest/conf/Catalina/localhost/manager.xml-------
+
+<Context privileged="true" antiResourceLocking="false"
+        docBase="${catalina.home}/webapps/manager">
+    <Valve className="org.apache.catalina.valves.RemoteAddrValve" allow="^.*$" />
+</Context>
+
+******************************** add a role to be able to run the manager app http://192.168.15.4:8080/manager/html
+ vi /opt/tomcat/latest/conf/tomcat-users.xml
+
+<role rolename="manager-gui"/>
+ <user username="admin" password="odroid" roles="manager-gui,manager-status,manager-script,manager-jmx"/>
+
+--------------------------------- in case the tomcat can not restart -----------------
+
+ps axf | grep tomcat | grep -v grep | awk '{print $1}'
+kill -9 #PID
+
+list all pid files
+ls -ln /var/run/*.pid
+
+----------------------------------------------------------------------
+
+to create the war file run the maven install
+
+---------------------------------------------------------------------------
+
+ 
+****************Maria DB*****************
+
+
+sudo apt install mariadb-server
+sudo systemctl status mariadb
+
+mysql -u root
+
+create database entities;
+use entities;
+
+CREATE TABLE database_name( dummy VARCHAR(20) , version decimal(3,2));
+insert into database_name values ('Entities',0.1);
+
+drop user eApp@localhost;
+CREATE USER eApp@localhost IDENTIFIED BY 'odroid';
+GRANT ALL PRIVILEGES ON entities.database_name to eApp@localhost;
+GRANT ALL PRIVILEGES ON *.* TO 'root'@'192.168.15.%' IDENTIFIED BY 'odroid' WITH GRANT OPTION;
+GRANT ALL PRIVILEGES ON *.* TO 'eApp'@'192.168.15.%' IDENTIFIED BY 'odroid' WITH GRANT OPTION;
+
+FLUSH PRIVILEGES;
+
+************IP Statica **************
+
+#check status 
+ip address show
+
+#desabilitar ip6
+
+sudo sysctl -w sudo sysctl -w net.ipv6.conf.all.disable_ipv6=1
+sudo sysctl -w net.ipv6.conf.default.disable_ipv6=1
+
+cat /etc/resolv.conf
+nameserver 127.0.0.53
+search Home
+
+systemd-resolve --status
+         DNS Servers: 189.209.127.244
+                      148.240.118.40
+
+#/etc/netplan/01-netcfg.yaml
+network:
+  version: 2
+  renderer: networkd
+  ethernets:
+    eth0:
+      dhcp4: no
+      dhcp6: no
+      addresses: [192.168.1.12/24]
+      gateway4: 192.168.15.1
+      nameservers:
+        addresses: [8.8.8.8,8.8.4.4]
+######
+#apply changes
+sudo netplan apply
+
+#check if net plan is in use the match_name says the matching name use by netplan and the backend can be NetworkManager
+ netplan generate --mapping eth0
+ result: id=eth0, backend=networkd, set_name=(null), match_name=eth0, match_mac=(null), match_driver=(null)
+ 
+#############haddop
+ 
+ https://hadoop.apache.org/docs/r3.3.0/hadoop-project-dist/hadoop-common/SingleCluster.html
+ 
+ wget https://downloads.apache.org/hadoop/common/hadoop-3.3.0/hadoop-3.3.0.tar.gz
+ version number is important because this version is the first compiled for the corresponding java version 
+######################create hadoop user and add the following to its .bashrc 
+export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-armhf
+export PDSH_RCMD_TYPE=ssh
+###################
+
+######## create file /opt/hadoop/check_hadoop.sh
+if [ -f /media/root/claudiacloud/apps/hadoop-3.3.0/sbin/start-all.sh ]
+then
+        echo "hadoop ready"
+        exit 0
+else
+        echo "haddop shell not exist yet $(date)"
+        exit 1
+fi
+#########
+
+###########create /etc/systemd/system/custom.target
+[Unit]
+Description=Custom Target
+Requires=multi-user.target
+After=multi-user.target
+AllowIsolate=yes
+########################
+
+####### create service file /etc/systemd/system/hadoop.service
+[Unit]
+Description=start hadoop
+After=multi-user.target
+
+[Service]
+Type=forking
+ExecStartPre=/bin/bash /opt/hadoop/check_hadoop.sh
+ExecStart=/bin/bash /media/root/claudiacloud/apps/hadoop-3.3.0/sbin/start-all.sh
+ExecStop=/bin/bash /media/root/claudiacloud/apps/hadoop-3.3.0/sbin/stop-all.sh
+RestartSec=30s
+Restart=on-failure
+TimeoutSec=900
+User=hadoop
+Group=hadoop
+Environment="JAVA_HOME=/usr/lib/jvm/java-11-openjdk-armhf"
+Environment="PDSH_RCMD_TYPE=ssh"
+
+[Install]
+WantedBy=custom.target
+########
+
+##### change the JAVA_HOME in /media/root/claudiacloud/apps/hadoop/etc/hadoop/hadoop-env.sh
+#  JAVA_HOME=/usr/java/testing hdfs dfs -ls
+JAVA_HOME=/usr/lib/jvm/java-11-openjdk-armhf
+######
+
+### comment the localhost entry in /etc/hosts 
+#127.0.0.1 localhost
+######
+
+###### install the custom.target and set it as default
+systemctl list-units --type target --all
+systemctl isolate custom.target
+systemctl enable custom.target
+systemctl set-default custom.target
+##############
+
+
+#### check hadoop status
+jps
+
+##### to manually start hadoop status
+
+sudo systemctl start hadoop
+sudo systemctl enable hadoop
+sudo systemctl daemon-reload
+
+sudo netstat -lpten | grep java
+
+#check journal status using hadoop user
+journalctl -b
+journalctl -e -u hadoop
+#Storage directory 
+/tmp/hadoop-hadoop/dfs/name
+
+
+-----------------------------HIVE--------------------------
+installjava version 8 as hive only works with that version
+/usr/lib/jvm/java-8-openjdk-armhf
+
+sudo apt-get install openjdk-8-jdk
+
+update-alternatives --config java
+
+download hive hadoop-3.3.0
+#### install instruccion
+https://cwiki.apache.org/confluence/display/Hive/GettingStarted#GettingStarted-RunningHive
+
+#### follow instruccion to remove problem with 
+https://issues.apache.org/jira/browse/HIVE-22718
+
+	Exception in thread "main" java.lang.NoSuchMethodError: com.google.common.base.Preconditions.checkArgument(ZLjava/lang/String;Ljava/lang/Object;)V
+	at org.apache.hadoop.conf.Configuration.set(Configuration.java:1357)
+	at org.apache.hadoop.conf.Configuration.set(Configuration.java:1338)
+
+#### 
+
+sudo adduser user_name new_group
+groups dave
+
+################# installing hadoop 2.7
+https://hadoop.apache.org/docs/r2.7.7/hadoop-project-dist/hadoop-common/SingleCluster.html
+
+#########using hadoop user add next in ~/.bashrc
+export JAVA_HOME=/media/root/claudiacloud/apps/java
+export PATH=$JAVA_HOME/bin:$PATH
+export PDSH_RCMD_TYPE=ssh
+
+export HADOOP_HOME=/media/root/claudiacloud/apps/hadoop
+export PATH=$HADOOP_HOME/bin:$PATH
+export HIVE_HOME=/media/root/claudiacloud/apps/hive
+export PATH=$HIVE_HOME/bin:$PATH
+
+export HADOOP_COMMON_LIB_NATIVE_DIR=$HADOOP_HOME/lib/native
+export HADOOP_OPTS="-Djava.library.path=$HADOOP_HOME/lib"
+###########################
+start hadoop #HOME_HADOOP/sbin/start-dfs.sh
+check status at odroid:/50070 utilities-Browse the file system
+-------------------------- hive version apache-hive-2.3.7-bin
+https://cwiki.apache.org/confluence/display/Hive/GettingStarted#GettingStarted-RunningHiveServer2andBeeline
+
+##############add hadoop user to the hadoop to avoid the privileges problem in  hadoop/etc/hadoop/core-site.xml
+    <property>
+     <name>hadoop.proxyuser.hadoop.hosts</name>
+     <value>*</value>
+    </property>
+    <property>
+     <name>hadoop.proxyuser.hadoop.groups</name>
+     <value>*</value>
+    </property>
+#################################
+
+$HIVE_HOME/bin/hiveserver2
+
+$HIVE_HOME/bin/beeline -u jdbc:hive2://localhost:10000
+
+check java servers with:
+netstat -lpten | grep java
+
+######################
