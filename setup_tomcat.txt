@@ -1,3 +1,37 @@
+""""install lightdm
+
+apt install lightdm
+sudo apt-get -y install slick-greeter 
+
+apt install x11vnc
+
+###################Create the file /etc/systemd/system/x11vnc.service
+
+# Description: Custom Service Unit file
+# File: /etc/systemd/system/x11vnc.service
+[Unit]
+Description="x11vnc"
+Requires=display-manager.service
+After=display-manager.service
+
+[Service]
+ExecStart=/usr/bin/x11vnc -loop -nopw -xkb -repeat -noxrecord -noxfixes -noxdamage -forever -rfbport 5900 -display :0 -auth guess
+ExecStop=/usr/bin/killall x11vnc
+Restart=on-failure
+RestartSec=2
+
+[Install]
+WantedBy=multi-user.target
+
+#####################################
+sudo systemctl enable x11vnc.service
+
+sudo systemctl start x11vnc.service
+
+
+connect using port 5900
+
+
 apt update 
 **** if fail next line can fix it
 echo "nameserver 8.8.8.8" | sudo tee /etc/resolv.conf > /dev/null
@@ -9,7 +43,7 @@ sudo apt-get install vnc4server
 vncpasswd
 vncserver :1
 vncserver -kill :1
-nano $HOME/.vnc/xstartup
+vi $HOME/.vnc/xstartup
 #add line
 exec /usr/bin/mate-session &
 #should look like this
@@ -131,9 +165,14 @@ insert into database_name values ('Entities',0.1);
 
 drop user eApp@localhost;
 CREATE USER eApp@localhost IDENTIFIED BY 'odroid';
-GRANT ALL PRIVILEGES ON entities.database_name to eApp@localhost;
+
+GRANT ALL PRIVILEGES ON *.* TO 'root'@'localhost' IDENTIFIED BY 'odroid' WITH GRANT OPTION;
+
+GRANT ALL PRIVILEGES ON entities.* to 'hadoop'@'localhost' IDENTIFIED BY 'odroid' WITH GRANT OPTION;
 GRANT ALL PRIVILEGES ON *.* TO 'root'@'192.168.15.%' IDENTIFIED BY 'odroid' WITH GRANT OPTION;
 GRANT ALL PRIVILEGES ON *.* TO 'eApp'@'192.168.15.%' IDENTIFIED BY 'odroid' WITH GRANT OPTION;
+
+GRANT ALL PRIVILEGES ON *.* TO 'hadoop'@'192.168.15.%' IDENTIFIED BY 'odroid' WITH GRANT OPTION;
 
 FLUSH PRIVILEGES;
 
@@ -287,7 +326,12 @@ sudo adduser user_name new_group
 groups dave
 
 ################# installing hadoop 2.7
+hadoop takes more than 2 GB of memory to make it work first make sure to have a swap file following instruction
+https://linuxize.com/post/how-to-add-swap-space-on-ubuntu-18-04/
+####################### install
 https://hadoop.apache.org/docs/r2.7.7/hadoop-project-dist/hadoop-common/SingleCluster.html
+
+log files are put in /tmp/<user>/hive.log example: /tmp/hadoop/hive.log
 
 #########using hadoop user add next in ~/.bashrc
 export JAVA_HOME=/media/root/claudiacloud/apps/java
@@ -318,11 +362,44 @@ https://cwiki.apache.org/confluence/display/Hive/GettingStarted#GettingStarted-R
     </property>
 #################################
 
-$HIVE_HOME/bin/hiveserver2
+sudo rm -r /tmp/*
 
-$HIVE_HOME/bin/beeline -u jdbc:hive2://localhost:10000
+bin/hdfs namenode -format
+
+sbin/start-dfs.sh
+
+jps
+
+sbin/start-yarn.sh
+
+jps
+
+
+
+$HADOOP_HOME/bin/hadoop fs -mkdir       /tmp
+$HADOOP_HOME/bin/hadoop fs -mkdir   -p  /user/hadoop/warehouse
+$HADOOP_HOME/bin/hadoop fs -chmod g+w   /tmp
+$HADOOP_HOME/bin/hadoop fs -chmod g+w   /user/hadoop/warehouse
+
+#schematool -initSchema -dbType mysql
+
+
+
+$HIVE_HOME/bin/hiveserver2
+$HIVE_HOME/bin/hive --service hiveserver2
+#### to stop use
+sudo service hive-server2 stop
+
+$HIVE_HOME/bin/beeline -nhadoop -u jdbc:hive2://localhost:10000
+
+
 
 check java servers with:
 netstat -lpten | grep java
 
 ######################
+
+change the hiveschema to sql
+https://medium.com/@ranjanchoudhury/how-to-configure-hive-metastore-after-fresh-installation-7b1a9ef4a90
+
+

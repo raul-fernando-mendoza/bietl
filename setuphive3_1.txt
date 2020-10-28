@@ -1,0 +1,99 @@
+INSTALL 
+https://docs.qubole.com/en/latest/user-guide/engines/hive/use-hive-versions.html
+Hive 3.1.1 (beta) (works with Tez 0.9.1 and Hadoop 3.0)
+
+##create a hadoop user
+sudo useradd -m -G sudo -U hadoop
+sudo chsh -s /bin/bash hadoop
+sudo passwd hadoop
+
+#change label of a disk
+sudo e2label /dev/sdb1 "mydiskname"
+
+#adding disk to /etc/fstab
+UUID=81694144-0b4c-4cfc-9319-52bfe76e6088  /media/c      ext3    defaults 0       1
+
+#########using hadoop user add next in ~/.bashrc
+export JAVA_HOME=/media/c/software/java
+export PATH=$JAVA_HOME/bin:$PATH
+export PDSH_RCMD_TYPE=ssh
+
+export HADOOP_HOME=/media/c/software/hadoop
+export PATH=$HADOOP_HOME/bin:$PATH
+export HIVE_HOME=/media/c/software/hive
+export PATH=$HIVE_HOME/bin:$PATH
+
+export HADOOP_COMMON_LIB_NATIVE_DIR=$HADOOP_HOME/lib/native
+export HADOOP_OPTS="-Djava.library.path=$HADOOP_HOME/lib"
+
+######install pdsh
+sudo apt-get install ssh
+sudo apt-get install pdsh
+
+#follow instruction at 
+https://hadoop.apache.org/docs/r3.1.3/hadoop-project-dist/hadoop-common/SingleCluster.html
+
+
+####add into hadoop-env.sh:
+export JAVA_HOME=/media/c/software/java
+
+#use the same guava jar for both hadoop and hive
+rm ./apache-hive-3.1.2-bin/lib/guava-19.0.jar
+cp ./hadoop-3.1.3/share/hadoop/hdfs/lib/guava-27.0-jre.jar ./apache-hive-3.1.2-bin/lib
+
+##############add hadoop user to the hadoop to avoid the privileges problem in  hadoop/etc/hadoop/core-site.xml
+    <property>
+     <name>hadoop.proxyuser.hadoop.hosts</name>
+     <value>*</value>
+    </property>
+    <property>
+     <name>hadoop.proxyuser.hadoop.groups</name>
+     <value>*</value>
+    </property>
+#### start server
+
+sudo rm -r /tmp/*
+
+bin/hdfs namenode -format
+
+sbin/start-dfs.sh
+jps (there must be datanode, namenode, secondarynamenode
+sbin/start-yarn.sh
+
+
+$HIVE_HOME/bin/hive --service hiveserver2
+
+##if you need to stop use:
+bin/hive --service hiveserver2 --stop
+
+#### verify hive is listening
+netstat -anp | grep 10000
+tcp6       0      0 :::10000                :::*                    LISTEN      17820/java
+
+
+#start beeline
+bin/beeline
+beeline>!connect jdbc:hive2://127.0.0.1:10000 scott tiger
+
+or 
+bin/beeline -u jdbc:hive2://127.0.0.1:10000 scott tiger
+
+#or connect using
+$HIVE_HOME/bin/beeline -nhadoop -u jdbc:hive2://localhost:10000
+
+CREATE EXTERNAL TABLE users
+(
+id int,
+name string
+)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY '|' LINES TERMINATED BY '\n'
+STORED AS TEXTFILE 
+LOCATION '/user/hadoop/warehouse/users';
+
+####change the folder where hdfs will write data Setting dfs.data.dir in hdfs-site.xml
+
+### create the metadata and create hadoop user
+CREATE USER 'hadoop'@'localhost' IDENTIFIED BY 'odroid';
+GRANT ALL PRIVILEGES ON *.* to 'hadoop'@'localhost' IDENTIFIED BY 'odroid' WITH GRANT OPTION;
+FLUSH PRIVILEGES;
+
