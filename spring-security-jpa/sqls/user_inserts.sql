@@ -13,4 +13,4 @@ COMMIT;
 
 thingthinghibernate_sequenceuser
 
-SELECT * FROM entities.user
+SELECT * FROM entities.useruser
