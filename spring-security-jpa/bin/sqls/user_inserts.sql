@@ -1,7 +1,5 @@
 drop user eApp@localhost;
 CREATE USER eApp@localhost IDENTIFIED BY 'odroid';
-create schema entities;
-
 GRANT ALL PRIVILEGES ON entities.* to eApp@localhost IDENTIFIED BY 'odroid' WITH GRANT OPTION;
 GRANT ALL PRIVILEGES ON entities.* TO eApp@'192.168.15.%' IDENTIFIED BY 'odroid' WITH GRANT OPTION;
 

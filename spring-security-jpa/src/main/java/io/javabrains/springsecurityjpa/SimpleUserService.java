@@ -1,6 +1,8 @@
 package io.javabrains.springsecurityjpa;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -10,47 +12,33 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-public class HomeResource {
-    
-    private String getUserInfo() {
+public class SimpleUserService {
+
+	@GetMapping("/SimpleUserService")
+    private SimpleUser getCurrentUser() {
+		SimpleUser user = new SimpleUser();
     	Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     	String username = "unknown";
-    	String roles = "";
+    	List<String> roles = new ArrayList<>();
 
     	if (principal instanceof UserDetails) {
-
+    		
     	   username = ((UserDetails)principal).getUsername();
+    	   user.setUserName(username);
     	   
     	   Collection<? extends GrantedAuthority> auth =  ((UserDetails)principal).getAuthorities();
     	   
     	   Object[] arrauth = auth.toArray();
+    	   
     	   for( int i =0 ; i< arrauth.length; i++) {
     		   SimpleGrantedAuthority role = (SimpleGrantedAuthority)arrauth[i];
-    		   roles += role.getAuthority(); 
-    		   roles+=",";
+    		   String roleName = role.getAuthority(); 
+    		   roles.add(roleName);
     	   }
-    	} else {
-
-    	   username = principal.toString();
-    	}
-    	return username + " roles: " + roles;
+    	   user.setRoles(roles);
+    	} 
+    	return user;
     }
 
-    @GetMapping("/")
-    public String home() {
-        return ("<h1>Welcome " + getUserInfo() + "</h1>");
-    }    
-    
-    @GetMapping("/user/welcome")
-    public String user() {
-        return ("<h1>Welcome User named:" + getUserInfo() + "</h1>");
-    }
-    
-    @GetMapping("/currentUser")
-    public String admin() {
-        return ("<h1>Welcome Admin2 named:" + getUserInfo() + "</h1>");
-    }
-    
-  
 }
 

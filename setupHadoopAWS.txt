@@ -5,7 +5,7 @@ https://docs.qubole.com/en/latest/user-guide/engines/hive/use-hive-versions.html
 sudo useradd -m -G sudo -U hadoop
 
 #########using hadoop user add next in ~/.bashrc
-export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
+export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64/jre
 export PATH=$JAVA_HOME/bin:$PATH
 export PDSH_RCMD_TYPE=ssh
 
@@ -27,14 +27,42 @@ cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
 chmod 0600 ~/.ssh/authorized_keys
 #### test with
 ssh localhost
+
+#to change the folder where datanode and nodename are written add the following to hdfs-site.xml
+    <property>
+        <name>dfs.datanode.data.dir</name>
+        <value>/opt/hadoop_datanode</value>
+    </property>
+    <property>
+        <name>dfs.namenode.name.dir</name>
+        <value>/opt/hadoop_namenode</value>
+    </property>
+
+
 ######################3 format the repository
+sudo rm -r /tmp/*
 bin/hdfs namenode -format
+
 #################### start the hdfs
 sbin/start-dfs.sh
+jps
+
+## test
+bin/hdfs dfs -mkdir /user
+bin/hdfs dfs -mkdir /user/hadoop
+bin/hdfs dfs -mkdir /user/hadoop/input
+bin/hdfs dfs -put etc/hadoop/*.xml /user/hadoop/input
+
+bin/hadoop jar share/hadoop/mapreduce/hadoop-mapreduce-examples-3.1.3.jar grep input output 'dfs[a-z.]+'
+bin/hdfs dfs -cat output/*
+
 ################check status
+http://3.137.208.2:9870
+
 ec2-52-15-229-150.us-east-2.compute.amazonaws.com:50070
 ################check server running
 netstat -lpten | grep java
+netstat -an |grep 10000
 hadoop takes more than 2 GB of memory to make it work first make sure to have a swap file following instruction
 https://linuxize.com/post/how-to-add-swap-space-on-ubuntu-18-04/
 
@@ -42,7 +70,7 @@ https://linuxize.com/post/how-to-add-swap-space-on-ubuntu-18-04/
 #### to add s3 support to hive add the following to hadoop-env.sh https://stackoverflow.com/questions/28029134/how-can-i-access-s3-s3n-from-a-local-hadoop-2-6-installation
 export HADOOP_CLASSPATH=$HADOOP_CLASSPATH:$HADOOP_HOME/share/hadoop/tools/lib/*
 
-####also add the following to coresite.xml retrive the keys from https://console.aws.amazon.com/iam/home#/security_credentials$access_key
+####also add the following to /etc/hadoop/core-site.xml retrive the keys from https://console.aws.amazon.com/iam/home#/security_credentials$access_key
 <property>
   <name>fs.s3.impl</name>
   <value>org.apache.hadoop.fs.s3.S3FileSystem</value>
@@ -67,19 +95,56 @@ export HADOOP_CLASSPATH=$HADOOP_CLASSPATH:$HADOOP_HOME/share/hadoop/tools/lib/*
   <name>fs.s3a.endpoint</name>
   <value>s3.us-east-2.amazonaws.com</value>
 </property>
+
+######folder for HIVE
+hadoop fs -mkdir       /tmp
+hadoop fs -mkdir       /user
+hadoop fs -mkdir       /user/hadoop/
+hadoop fs -mkdir       /user/hadoop/warehouse
+hadoop fs -chmod g+w   /tmp
+hadoop fs -chmod g+w   /user/hadoop/warehouse
+
 ######################### HIVE create metastore
 
 $HIVE_HOME/bin/schematool -dbType derby -initSchema
+
+##############add hadoop user to the hadoop to avoid the privileges problem in  hadoop/etc/hadoop/core-site.xml
+    <property>
+     <name>hadoop.proxyuser.hadoop.hosts</name>
+     <value>*</value>
+    </property>
+    <property>
+     <name>hadoop.proxyuser.hadoop.groups</name>
+     <value>*</value>
+    </property>
 
 ######################## HIVE init server
 
 $HIVE_HOME/bin/hiveserver2
 $HIVE_HOME/bin/hive --service hiveserver2
 
+###connect 
+$HIVE_HOME/bin/beeline -nhadoop -u jdbc:hive2://localhost:10000
+
 bin/hive --service hiveserver2 --stop
 bin/hive --service metastore --stop
 
+#check if metastore can be started
+hive --service metastore
 
+
+####### java.lang.NoSuchMethodError: com.google.common.base.Preconditions.checkArgument
+
+find . -name guava*.*
+./share/hadoop/common/lib/guava-27.0-jre.jar
+./share/hadoop/hdfs/lib/guava-27.0-jre.jar
+
+rm ./share/hadoop/hdfs/lib/guava-27.0-jre.jar
+
+ find . -name guava*.*
+
+./hadoop-3.1.3/share/hadoop/common/lib/guava-27.0-jre.jar
+./apache-hive-3.1.2-bin/lib/guava-19.0.jar
 
 
 ##############creating table in hive
@@ -183,4 +248,12 @@ cp hadoop/share/hadoop/tools/lib/hadoop-aws-2.7.7.jar hadoop/share/hadoop/common
 cp hadoop/share/hadoop/tools/lib/jackson-databind-2.2.3.jar hadoop/share/hadoop/common/lib/
 cp hadoop/share/hadoop/tools/lib/jackson-* hadoop/share/hadoop/common/lib/
 
+ ***********
  
+cp $HADOOP_HOME/share/hadoop/tools/lib/aws-java-sdk-bundle-1.11.271.jar $HIVE_HOME/lib/
+cp $HADOOP_HOME/share/hadoop/tools/lib/hadoop-aws-3.1.3.jar $HIVE_HOME/lib/
+
+cp hadoop/share/hadoop/tools/lib/aws-java-sdk-bundle-1.11.271.jar hadoop/share/hadoop/common/lib/
+cp hadoop/share/hadoop/tools/lib/hadoop-aws-3.1.3.jar hadoop/share/hadoop/common/lib/
+cp hadoop/share/hadoop/tools/lib/jackson-databind-2.2.3.jar hadoop/share/hadoop/common/lib/
+cp hadoop/share/hadoop/tools/lib/jackson-* hadoop/share/hadoop/common/lib/
