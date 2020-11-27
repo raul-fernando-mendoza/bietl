@@ -72,6 +72,40 @@
           <artifactId>tomcat-embed-jasper</artifactId>
           <scope>provided</scope>
        </dependency>		
+       <!-- swa sdk -->
+		<dependency>
+		  <groupId>software.amazon.awssdk</groupId>
+		  <artifactId>s3</artifactId>
+  		  <version>2.15.28</version>		  
+		</dependency>
+		
+		<dependency>
+		    <groupId>software.amazon.awssdk</groupId>
+		    <artifactId>cognitoidentity</artifactId>
+		    <version>2.15.28</version>
+		</dependency>
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>cognitoidentityprovider</artifactId>
+            <version>2.15.28</version>
+        </dependency>		
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>dynamodb</artifactId>
+            <version>2.15.28</version>
+        </dependency>		
+
+        <dependency>
+          <groupId>software.amazon.awssdk</groupId>
+          <artifactId>lambda</artifactId>
+          <version>2.15.33</version>
+        </dependency>   
+        
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>sts</artifactId>
+            <version>2.15.33</version>
+        </dependency>            
 	</dependencies>
 
 	<build>
