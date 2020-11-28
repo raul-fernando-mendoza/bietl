@@ -117,19 +117,11 @@ public class CognitoLoginUserSTSApplication extends SpringBootServletInitializer
         String password ="ETLbi123!";
         Region region = Region.US_EAST_2;
         
-        //AnonymousCredentialsProvider credentialsProvider = AnonymousCredentialsProvider.create();
-        
-        String accessKeyId = "AKIASG7SDJOJRP2P262R";
-        String secretAccessKey = "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";
-        
-        AwsBasicCredentials credentials = AwsBasicCredentials.create(accessKeyId, secretAccessKey);
-        
-        StaticCredentialsProvider credentialsProvider = StaticCredentialsProvider.create(credentials);
         
         
         CognitoIdentityProviderClient cognitoclient = CognitoIdentityProviderClient.builder()
                 .region(Region.US_EAST_2)
-                .credentialsProvider(credentialsProvider)
+          //      .credentialsProvider(credentialsProvider)
                 .build();
 
         String idToken = initiateAutoRequest(cognitoclient,clientID, userPoolId, username ,password);
@@ -142,7 +134,7 @@ public class CognitoLoginUserSTSApplication extends SpringBootServletInitializer
     	
         
 
-    	CognitoIdentityClient amazonCognitoIdentity =  CognitoIdentityClient.builder().region(Region.US_EAST_2).credentialsProvider(credentialsProvider).build();
+    	CognitoIdentityClient amazonCognitoIdentity =  CognitoIdentityClient.builder().region(Region.US_EAST_2).build();
     	
     	Map<String, String> logins = new HashMap<>();
     	logins.put("cognito-idp.us-east-2.amazonaws.com/"+userPoolId,idToken);
