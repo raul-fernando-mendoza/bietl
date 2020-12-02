@@ -157,7 +157,7 @@ sudo systemctl status mariadb
 
 mysql -u root
 
-create database entities;
+create schema entities;
 use entities;
 
 CREATE TABLE database_name( dummy VARCHAR(20) , version decimal(3,2));
