@@ -17,11 +17,13 @@ import org.slf4j.LoggerFactory;
 public class Welcome {
 	static final Logger log = 
 	        LoggerFactory.getLogger(Welcome.class);	
-	@GetMapping("/welcome")
+	@GetMapping("/")
     //public String welcome(HttpServletRequest request) throws Exception { 
 	public String greeting(@RequestParam(name="name", required=false, defaultValue="World") String name, Model model) {
 		log.info("welcome called jsp {}", name);
-		model.addAttribute("userName", CurrentUser.getUserName());
+		
+		model.addAttribute("user", CurrentUser.getUser());
+		model.addAttribute("name", name);
 		model.addAttribute("roles", CurrentUser.getRoles());
         return "welcome";
     }	

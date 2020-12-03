@@ -35,11 +35,10 @@ import software.amazon.awssdk.services.cognitoidentityprovider.model.GroupType;
 //chnage application.properties an use spring.jpa.hibernate.ddl-auto=create-drop to recreate the hibernate tables.
 
 @SpringBootApplication
-@EnableJpaRepositories(basePackageClasses = {UserRepository.class, ThingRepository.class} )
-public class CognitoLoginUserApplication extends SpringBootServletInitializer{
+public class AWSCognitoLoginUserApplication extends SpringBootServletInitializer{
 
 	static final Logger log = 
-	        LoggerFactory.getLogger(CognitoLoginUserApplication.class);
+	        LoggerFactory.getLogger(AWSCognitoLoginUserApplication.class);
 	
 	public static boolean isBlank(String ptext) {
 		 return ptext == null || ptext.trim().length() == 0;

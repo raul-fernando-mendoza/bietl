@@ -15,7 +15,7 @@ import org.slf4j.LoggerFactory;
 //chnage application.properties an use spring.jpa.hibernate.ddl-auto=create-drop to recreate the hibernate tables.
 
 @SpringBootApplication
-@EnableJpaRepositories(basePackageClasses = {UserRepository.class, ThingRepository.class} )
+@EnableJpaRepositories(basePackageClasses = {ThingRepository.class} )  //use , to add more classes
 public class SpringSecurityJpaApplication extends SpringBootServletInitializer{
 
 	static final Logger log = 

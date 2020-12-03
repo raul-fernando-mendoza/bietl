@@ -21,7 +21,7 @@ import java.io.InputStream;
 *
 *  https://github.com/aws-doc-sdk-examples/tree/master/javav2/usecases/creating_workflows_stepfunctions
 */
-public class LambdaCreateApplication {
+public class AWSLambdaCreateApplication {
 
  public static void main(String[] args) {
 

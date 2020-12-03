@@ -98,11 +98,10 @@ import software.amazon.awssdk.services.cognitoidentity.model.GetIdRequest;
  *  For more information, see "Editing the Trust Relationship for an Existing Role" in the AWS Directory Service guide.
  */
 @SpringBootApplication
-@EnableJpaRepositories(basePackageClasses = {UserRepository.class, ThingRepository.class} )
-public class CognitoLoginUserSTSApplication extends SpringBootServletInitializer{
+public class AWSCognitoLoginUserSTSApplication extends SpringBootServletInitializer{
 
 	static final Logger log = 
-	        LoggerFactory.getLogger(CognitoLoginUserSTSApplication.class);
+	        LoggerFactory.getLogger(AWSCognitoLoginUserSTSApplication.class);
 	
 	public static boolean isBlank(String ptext) {
 		 return ptext == null || ptext.trim().length() == 0;

@@ -13,12 +13,15 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @EnableWebSecurity
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
-    @Autowired
-    UserDetailsService userDetailsService;
+   // @Autowired
+   // UserDetailsService userDetailsService;
+	@Autowired
+    private CustomAuthenticationProvider authProvider;    
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        auth.userDetailsService(userDetailsService);
+       // auth.userDetailsService(userDetailsService);
+        auth.authenticationProvider(authProvider);
     }
 
     //make sure to enter the roles in the database with the prefix ROLE_ example ROLE_ADMIN

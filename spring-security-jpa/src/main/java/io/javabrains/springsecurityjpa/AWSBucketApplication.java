@@ -1,8 +1,5 @@
 package io.javabrains.springsecurityjpa;
 
-import org.springframework.boot.SpringApplication;
-
-
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
@@ -27,11 +24,10 @@ import software.amazon.awssdk.services.s3.S3Client;
 //chnage application.properties an use spring.jpa.hibernate.ddl-auto=create-drop to recreate the hibernate tables.
 
 @SpringBootApplication
-@EnableJpaRepositories(basePackageClasses = {UserRepository.class, ThingRepository.class} )
-public class BucketApplication extends SpringBootServletInitializer{
+public class AWSBucketApplication extends SpringBootServletInitializer{
 
 	static final Logger log = 
-	        LoggerFactory.getLogger(BucketApplication.class);
+	        LoggerFactory.getLogger(AWSBucketApplication.class);
 	
     public static void main(String[] args) throws IOException {
 

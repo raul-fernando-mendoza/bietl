@@ -10,7 +10,7 @@ import software.amazon.awssdk.services.dynamodb.model.ResourceNotFoundException;
 import java.util.HashMap;
 //snippet-end:[dynamodb.java2.put_item.import]
 
-public class DynamoPutItemApplication {
+public class AWSDynamoPutItemApplication {
 
   public static void main(String[] args) {
 

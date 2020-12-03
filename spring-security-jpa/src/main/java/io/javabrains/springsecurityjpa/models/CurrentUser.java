@@ -7,7 +7,7 @@ import java.util.List;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
+
 
 public class CurrentUser{
     
@@ -15,18 +15,26 @@ public class CurrentUser{
     	Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     	String username = null;
 
-    	if (principal instanceof UserDetails) {
-    	   username = ((UserDetails)principal).getUsername();
+    	if (principal instanceof User) {
+    	   username = ((User)principal).getUserName();
     	}
     	return username;
+    }
+    static public User getUser() {
+    	User user = null;
+    	Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    	if (principal instanceof User) {
+    		user =  (User) principal;
+    	}
+    	return user;
     }
     static public List<String>  getRoles() {
     	Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     	List<String> roles = new ArrayList<String>();
 
-    	if (principal instanceof UserDetails) {
+    	if (principal instanceof User) {
 
-    	   Collection<? extends GrantedAuthority> auth =  ((UserDetails)principal).getAuthorities();
+    	   Collection<? extends GrantedAuthority> auth =  ((User)principal).getGrantedAutorities();
     	   
     	   Object[] arrauth = auth.toArray();
     	   

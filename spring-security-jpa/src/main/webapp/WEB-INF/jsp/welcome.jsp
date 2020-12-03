@@ -8,18 +8,21 @@
 </head>
 <body>
 	<b>Hello from welcome ${name}</b>
-<form action="welcome"> 
+<form action="/"> 
 welcome: <input type="text" name="name" /><br>
 <input type="submit" value="Submit Details!!"/> 
 </form> 
-<c:if test="${not empty userName}">  
-   user: {userName} 
+<c:if test="${not empty user}">  
+   user: {user.userName} 
 	<c:forEach var="r" items="${roles}">  
 	   Item <c:out value="${r}"/><p>
 	</c:forEach>     
 </c:if>  
-<c:if test="${empty userName}">
+<c:if test="${empty user}">
     Please login <a href="<c:url value='/login'/>">login</a>.
+</c:if>
+<c:if test="${not empty user}">
+    <a href="<c:url value='/logout'/>">logout</a>.
 </c:if>
 
 </body>

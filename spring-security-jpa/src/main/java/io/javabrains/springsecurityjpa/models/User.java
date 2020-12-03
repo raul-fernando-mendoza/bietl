@@ -1,55 +1,55 @@
 package io.javabrains.springsecurityjpa.models;
 
+import java.util.ArrayList;
+
 import javax.persistence.*;
 
-@Entity
-@Table(name = "User")
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+
+import io.javabrains.springsecurityjpa.UserCredentials;
+
 public class User {
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private int id;
     private String userName;
-    private String password;
-    private boolean active;
-    private String roles;
+    private String idToken;
+    
+    UserCredentials userCredentials;
+    
+    public UserCredentials getUserCredentials() {
+		return userCredentials;
+	}
 
-    public int getId() {
-        return id;
+	public void setUserCredentials(UserCredentials userCredentials) {
+		this.userCredentials = userCredentials;
+	}
+
+	private ArrayList<SimpleGrantedAuthority> grantedAuthorities;
+    
+    public String getIdToken() {
+		return idToken;
+	}
+
+	public void setIdToken(String idToken) {
+		this.idToken = idToken;
+	}
+
+    public ArrayList<SimpleGrantedAuthority> getGrantedAutorities() {
+		return grantedAuthorities;
+	}
+
+	public void setGrantedAutorities(ArrayList<SimpleGrantedAuthority> grantedAutorities) {
+		this.grantedAuthorities = grantedAutorities;
+	}
+
+	public User(String userName) {
+    	this.userName = userName;
     }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
+    
     public String getUserName() {
         return userName;
     }
 
-    public void setUserName(String userName) {
-        this.userName = userName;
-    }
+	
 
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public boolean isActive() {
-        return active;
-    }
-
-    public void setActive(boolean active) {
-        this.active = active;
-    }
-
-    public String getRoles() {
-        return roles;
-    }
-
-    public void setRoles(String roles) {
-        this.roles = roles;
-    }
+   
+    
 }

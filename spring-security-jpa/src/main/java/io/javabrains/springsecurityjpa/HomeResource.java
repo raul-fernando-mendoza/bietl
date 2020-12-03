@@ -9,6 +9,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.javabrains.springsecurityjpa.models.User;
+
 @RestController
 public class HomeResource {
     
@@ -17,11 +19,11 @@ public class HomeResource {
     	String username = "unknown";
     	String roles = "";
 
-    	if (principal instanceof UserDetails) {
+    	if (principal instanceof User) {
 
-    	   username = ((UserDetails)principal).getUsername();
+    	   username = ((User)principal).getUserName();
     	   
-    	   Collection<? extends GrantedAuthority> auth =  ((UserDetails)principal).getAuthorities();
+    	   Collection<SimpleGrantedAuthority> auth =  ((User)principal).getGrantedAutorities();
     	   
     	   Object[] arrauth = auth.toArray();
     	   for( int i =0 ; i< arrauth.length; i++) {
@@ -35,12 +37,12 @@ public class HomeResource {
     	}
     	return username + " roles: " + roles;
     }
-
+/*
     @GetMapping("/")
     public String home() {
         return ("<h1>Welcome " + getUserInfo() + "</h1>");
     }    
-    
+ */   
     @GetMapping("/user/welcome")
     public String user() {
         return ("<h1>Welcome User named:" + getUserInfo() + "</h1>");
